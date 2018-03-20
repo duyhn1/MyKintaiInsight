@@ -1,0 +1,101 @@
+﻿@using System.Security.Claims;
+@{
+    ViewBag.Title = "My Request";
+    var identity = User.Identity as ClaimsIdentity;
+    var access_token = identity.Claims.FirstOrDefault(c => c.Type == "accessToken")?.Value;
+}
+
+@Styles.Render("~/Content/date-picker")
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+<link rel="stylesheet" href="~/Content/css/overtime.css" />
+<div ng-app="OvertimeApp" ng-controller="OvertimeCtrl">
+    <div class="search-panel">
+        <div class="input-daterange input-group">
+            <span class="input-group-addon">From</span>
+            <input type="text" class="form-control" name="start" id="dateStart" />
+            <span class="input-group-addon">To</span>
+            <input type="text" class="form-control" name="end" id="dateEnd" />
+        </div>
+        <div class="input-group">
+            <span class="input-group-addon">Status</span>
+            <select class="form-control" id="status">
+                <option value="0">All</option>
+                <option value="1">Submitted</option>
+                <option value="2">Approved</option>
+                <option value="3">Rejected</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" id="btnSearch" ng-click="Search()">Search</button>
+    </div>
+    <div class="hide" id="tblSearchResult" ng-show="ovt.length > 0">
+        <hr />
+        <table class="table table-bordered table-responsive">
+            <thead>
+                <tr>
+                    @*<th>#</th>*@
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Status</th>
+                    <th class="pc">Reason</th>
+                    <th class="pc">Account</th>
+                    <th class="pc">Approver</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody ng-repeat="(key, value) in ovt | groupBy:'status'">
+                <tr style="font-weight:bold"><td colspan="10">{{key | status}}</td></tr>
+                <tr ng-repeat="o in value">
+                    @*<td>{{$index + 1}}</td>*@
+                    <td>{{o.requestDate | date}}</td>
+                    <td ng-hide="o.isEdit">{{o.startTime | time}}</td>
+                    <td ng-show="o.isEdit" class="mw-80"><input type="text" class="form-control timepicker startTime" ng-model="o.startTimeEdit" value="{{o.startTime | time}}"/></td>
+                    <td ng-hide="o.isEdit">{{o.endTime | time}}</td>
+                    <td ng-show="o.isEdit" class="mw-80"><input type="text" class="form-control timepicker endTime" ng-model="o.endTimeEdit" value="{{o.endTime | time}}" /></td>
+                    <td>{{o.status | status}}</td>
+                    <td class="pc">{{o.reason}}</td>
+                    <td class="pc">{{o.account}}</td>
+                    <td class="pc">{{o.approver}}</td>
+                    <td ng-hide="o.isEdit"><button class="btn btn-danger" ng-click="o.isEdit = !o.isEdit">Edit</button></td>
+                    <td ng-show="o.isEdit"><button class="btn btn-primary" onclick="PassTime(this)" ng-click="SaveRequest(o)">Save</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+@Scripts.RenderFormat("<script src='{0}' defer></script>", "~/bundles/date-picker")
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/angular-filter/0.4.7/angular-filter.js"></script>
+<script src="~/Scripts/angularjs/OvertimeController.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js" defer></script>
+<script>
+    window.accessToken = '@access_token';
+    window.onload = () => {
+        $('.input-daterange').datepicker({
+            autoclose: true,
+            todayBtn: "linked",
+            daysOfWeekDisabled: "0,6",
+            daysOfWeekHighlighted: "0,6",
+            todayHighlight: true
+        });
+        $('.timepicker').each(function () {
+            $(this).timepicker({
+                timeFormat: 'HH:mm',
+                interval: 15,
+                minTime: '18:30',
+                maxTime: '23:45pm',
+                defaultTime: this.defaultValue,
+                startTime: '18:30',
+                dynamic: false,
+                dropdown: true,
+                scrollbar: false
+            });
+        })
+        $('#tblSearchResult').removeClass('hide');
+    };
+    PassTime = (t) => {
+        $scope = angular.element(t.parentNode).scope();
+        $scope.o.startTimeEdit =  $(t).closest('tr').find('.startTime').val();
+        $scope.o.endTimeEdit = $(t).closest('tr').find('.endTime').val();
+    }
+</script>
