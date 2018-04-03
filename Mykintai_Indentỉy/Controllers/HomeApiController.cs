@@ -22,7 +22,8 @@ namespace Mykintai_Indentỉy.Controllers
         private readonly string editOvertimeUrl = "https://api.fjpservice.com/api/otrequest/resubmit";
 
         [HttpPost]
-        public async Task<string> CheckOut([FromBody] GeographicModel geo)
+        [Route("api/checkout")]
+        public async Task<string> CheckOut(GeographicModel geo)
         {
             var authorization = Request.Headers.Authorization;
             var accessToken = authorization.Parameter;
@@ -57,7 +58,8 @@ namespace Mykintai_Indentỉy.Controllers
         }
 
         [HttpPost]
-        public async Task<string> CheckIn([FromBody] GeographicModel geo)
+        [Route("api/checkin")]
+        public async Task<string> CheckIn(GeographicModel geo)
         {
             var authorization = Request.Headers.Authorization;
             var accessToken = authorization.Parameter;

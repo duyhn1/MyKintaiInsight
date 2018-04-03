@@ -43,7 +43,7 @@ app.controller('OvertimeCtrl', function ($scope, $http) {
     };
     $scope.SaveRequest = t => {
         $http({
-            method: 'put',
+            method: 'post',
             headers: {
                 'authorization': 'Bearer ' + window.accessToken,
                 'content-type': 'application/json'
@@ -55,16 +55,16 @@ app.controller('OvertimeCtrl', function ($scope, $http) {
                 reason: t.reason,
                 status: t.status,
                 requestDate: t.requestDate,
-                startTimeEdit: new Date('1970/01/01 ' + t.startTimeEdit + 'Z').toISOString(),
-                endTimeEdit: new Date('1970/01/01 ' + t.endTimeEdit + 'Z').toISOString()
+                startTimeEdit: new Date('1970-01-01T' + t.startTimeEdit + ':00Z').toISOString(),
+                endTimeEdit: new Date('1970-01-01T' + t.endTimeEdit + ':00Z').toISOString()
             }
         }).then(res => {
             alert('Edit success!!!');
-            t.startTime = new Date('1970/01/01 ' + t.startTimeEdit);
-            t.endTime = new Date('1970/01/01 ' + t.endTimeEdit);
+            t.startTime = '1970-01-01T' + t.startTimeEdit + ':00Z';
+            t.endTime = '1970-01-01T' + t.endTimeEdit + ':00Z';
             t.isEdit = false;
         }, err => {
-            alert(err.status + ': ' + err.statusText);
+            alert(err.statusText + ': ' + err.data);
         });
     }
 })
@@ -75,7 +75,10 @@ app.controller('OvertimeCtrl', function ($scope, $http) {
     })
     .filter('time', function () {
         return function (x) {
-            return new Date(x).toLocaleTimeString('ja-JP', options);
+            var s = x.endsWith('Z') ? x : x + 'Z';
+            var d = new Date(s);
+            return new Date(d.getTime() + d.getTimezoneOffset()*60000).toLocaleTimeString('ja-JP', options)
+            //return new Date(x + 'Z').toLocaleTimeString('ja-JP', options);
         }
     })
     .filter('status', function () {
